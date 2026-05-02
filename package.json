@@ -1,10 +1,10 @@
 {
   "name": "create-claude-enjoyer",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Scaffold a claude-enjoyer project",
   "type": "module",
   "bin": {
-    "create-claude-enjoyer": "./index.js"
+    "create-claude-enjoyer": "index.js"
   },
   "files": [
     "index.js",
