@@ -2,6 +2,26 @@
   "name": "create-claude-enjoyer",
   "version": "0.0.1",
   "description": "Scaffold a claude-enjoyer project",
+  "license": "MIT",
+  "author": "nick20name17",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nick20name17/create-claude-enjoyer.git"
+  },
+  "homepage": "https://github.com/nick20name17/create-claude-enjoyer#readme",
+  "bugs": {
+    "url": "https://github.com/nick20name17/create-claude-enjoyer/issues"
+  },
+  "keywords": [
+    "create",
+    "scaffold",
+    "claude",
+    "claude-code",
+    "vite",
+    "react",
+    "template",
+    "mcp"
+  ],
   "type": "module",
   "bin": {
     "create-claude-enjoyer": "index.js"
