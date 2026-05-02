@@ -3,14 +3,14 @@ import {
   intro,
   outro,
   text,
-  multiselect,
+  select,
   confirm,
   isCancel,
   cancel,
   spinner,
   note,
 } from "@clack/prompts";
-import { cp, readFile, writeFile, mkdir, rename, stat } from "node:fs/promises";
+import { cp, readFile, writeFile, rename, rm, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
@@ -19,53 +19,25 @@ import { spawn } from "node:child_process";
 const here = dirname(fileURLToPath(import.meta.url));
 const TEMPLATE = join(here, "template");
 
-const MCP_REGISTRY = {
-  filesystem: {
-    label: "filesystem — доступ до локальних файлів",
-    config: {
-      command: "npx",
-      args: ["-y", "@modelcontextprotocol/server-filesystem", "."],
-    },
-  },
-  github: {
-    label: "github — issues, PR, репозиторії",
-    config: {
-      command: "npx",
-      args: ["-y", "@modelcontextprotocol/server-github"],
-      env: { GITHUB_PERSONAL_ACCESS_TOKEN: "" },
-    },
-  },
-  postgres: {
-    label: "postgres — SQL запити",
-    config: {
-      command: "npx",
-      args: ["-y", "@modelcontextprotocol/server-postgres", "postgres://localhost/db"],
-    },
-  },
-  brave: {
-    label: "brave-search — пошук в інтернеті",
-    config: {
-      command: "npx",
-      args: ["-y", "@modelcontextprotocol/server-brave-search"],
-      env: { BRAVE_API_KEY: "" },
-    },
-  },
-};
-
-const SKILLS = [
-  { value: "code-review", label: "code-review" },
-  { value: "security-review", label: "security-review" },
-  { value: "simplify", label: "simplify" },
-  { value: "react-doctor", label: "react-doctor" },
-  { value: "frontend-design", label: "frontend-design" },
-];
-
 const PMS = [
   { value: "bun", label: "bun" },
   { value: "pnpm", label: "pnpm" },
   { value: "npm", label: "npm" },
   { value: "skip", label: "не встановлювати" },
 ];
+
+const MCP_RUNNERS = {
+  bun: { command: "bunx", prefix: [] },
+  pnpm: { command: "pnpm", prefix: ["dlx"] },
+  npm: { command: "npx", prefix: ["-y"] },
+  skip: { command: "npx", prefix: ["-y"] },
+};
+
+const PM_DENY = {
+  bun: ["Bash(npm:*)", "Bash(pnpm:*)", "Bash(yarn:*)"],
+  pnpm: ["Bash(npm:*)", "Bash(bun:*)", "Bash(yarn:*)"],
+  npm: ["Bash(pnpm:*)", "Bash(bun:*)", "Bash(yarn:*)"],
+};
 
 function checkCancel(value) {
   if (isCancel(value)) {
@@ -94,6 +66,7 @@ async function run() {
   );
 
   const target = resolve(process.cwd(), name);
+  let shouldClean = false;
 
   if (existsSync(target)) {
     const overwrite = checkCancel(
@@ -106,36 +79,16 @@ async function run() {
       cancel("Папка вже існує — скасовано.");
       process.exit(0);
     }
+    shouldClean = true;
   }
 
-  const mcps = checkCancel(
-    await multiselect({
-      message: "MCP сервери (Space — вибрати, Enter — далі)",
-      options: Object.entries(MCP_REGISTRY).map(([value, { label }]) => ({
-        value,
-        label,
-      })),
-      required: false,
-    }),
-  );
-
-  const skills = checkCancel(
-    await multiselect({
-      message: "Скіли Claude Code",
-      options: SKILLS,
-      required: false,
-    }),
-  );
-
-  const pm = checkCancel(
-    await multiselect({
-      message: "Встановити залежності? (вибери один)",
+  const chosenPm = checkCancel(
+    await select({
+      message: "Встановити залежності?",
       options: PMS,
-      required: false,
-      initialValues: ["bun"],
+      initialValue: "bun",
     }),
   );
-  const chosenPm = Array.isArray(pm) ? pm[0] ?? "skip" : "skip";
 
   const gitInit = checkCancel(
     await confirm({ message: "git init?", initialValue: true }),
@@ -143,6 +96,7 @@ async function run() {
 
   const s = spinner();
   s.start("Копіюю шаблон");
+  if (shouldClean) await rm(target, { recursive: true, force: true });
   await cp(TEMPLATE, target, { recursive: true });
   // _gitignore -> .gitignore (npm не публікує .gitignore as-is)
   const ignoreSrc = join(target, "_gitignore");
@@ -157,24 +111,38 @@ async function run() {
     await writeFile(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
   }
 
-  // .mcp.json
-  if (mcps.length) {
-    const mcpServers = Object.fromEntries(
-      mcps.map((k) => [k, MCP_REGISTRY[k].config]),
-    );
-    await writeFile(
-      join(target, ".mcp.json"),
-      JSON.stringify({ mcpServers }, null, 2) + "\n",
-    );
+  // .mcp.json: переписати command/args під обраний package manager
+  const mcpPath = join(target, ".mcp.json");
+  if (existsSync(mcpPath)) {
+    const mcp = JSON.parse(await readFile(mcpPath, "utf8"));
+    const runner = MCP_RUNNERS[chosenPm];
+    for (const server of Object.values(mcp.mcpServers ?? {})) {
+      if (server.command !== "npx") continue;
+      const tail = server.args?.[0] === "-y" ? server.args.slice(1) : server.args ?? [];
+      server.command = runner.command;
+      server.args = [...runner.prefix, ...tail];
+    }
+    await writeFile(mcpPath, JSON.stringify(mcp, null, 2) + "\n");
   }
 
-  // .claude/settings.json
-  if (skills.length) {
-    await mkdir(join(target, ".claude"), { recursive: true });
+  // .claude/settings.json + CLAUDE.md: форсимо обраний package manager
+  if (chosenPm !== "skip") {
+    const claudeDir = join(target, ".claude");
+    await mkdir(claudeDir, { recursive: true });
+    const settings = { permissions: { deny: PM_DENY[chosenPm] } };
     await writeFile(
-      join(target, ".claude", "settings.json"),
-      JSON.stringify({ enabledSkills: skills }, null, 2) + "\n",
+      join(claudeDir, "settings.json"),
+      JSON.stringify(settings, null, 2) + "\n",
     );
+
+    const claudeMdPath = join(target, "CLAUDE.md");
+    if (existsSync(claudeMdPath)) {
+      const md = await readFile(claudeMdPath, "utf8");
+      const block = `\n## Package manager\n\n${chosenPm} only. don't use other PMs.\n`;
+      if (!md.includes("## Package manager")) {
+        await writeFile(claudeMdPath, md + block);
+      }
+    }
   }
 
   if (gitInit) {
@@ -191,14 +159,11 @@ async function run() {
     }
   }
 
-  const summary = [
-    `📁 ${target}`,
-    mcps.length ? `🔌 MCP: ${mcps.join(", ")}` : null,
-    skills.length ? `🎯 Skills: ${skills.join(", ")}` : null,
-  ]
-    .filter(Boolean)
-    .join("\n");
-  note(summary, "Готово");
+  note(`📁 ${target}`, "Готово");
+
+  const runner = MCP_RUNNERS[chosenPm];
+  const skillCmd = [runner.command, ...runner.prefix, "skills", "add", "shadcn/ui"].join(" ");
+  note(`shadcn skill (опційно, для Claude Code):\n  cd ${name} && ${skillCmd}`, "AI context");
 
   outro(
     chosenPm === "skip"

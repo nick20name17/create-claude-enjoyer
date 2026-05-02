@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "singleQuote": true,
+  "jsxSingleQuote": true,
+  "semi": false,
+  "trailingComma": "none",
+  "singleAttributePerLine": true,
+  "arrowParens": "avoid",
+  "objectWrap": "collapse",
+  "jsdoc": true,
+  "sortTailwindcss": true,
+  "sortImports": true,
+  "ignorePatterns": [
+    ".agents/",
+    "node_modules/",
+    "coverage/",
+    "dist/",
+    "bun.lock",
+    "src/routeTree.gen.ts"
+  ]
+}
