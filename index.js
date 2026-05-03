@@ -129,7 +129,22 @@ async function run() {
   if (chosenPm !== "skip") {
     const claudeDir = join(target, ".claude");
     await mkdir(claudeDir, { recursive: true });
-    const settings = { permissions: { deny: PM_DENY[chosenPm] } };
+    const settings = {
+      permissions: { deny: PM_DENY[chosenPm] },
+      hooks: {
+        PreToolUse: [
+          {
+            matcher: "Bash",
+            hooks: [
+              {
+                type: "command",
+                command: "node $CLAUDE_PROJECT_DIR/.claude/hooks/typecheck-on-commit.mjs",
+              },
+            ],
+          },
+        ],
+      },
+    };
     await writeFile(
       join(claudeDir, "settings.json"),
       JSON.stringify(settings, null, 2) + "\n",
@@ -142,6 +157,15 @@ async function run() {
       if (!md.includes("## Package manager")) {
         await writeFile(claudeMdPath, md + block);
       }
+    }
+  }
+
+  // Якщо git init не зробили — приберемо `prepare` (інакше simple-git-hooks впаде під час install)
+  if (!gitInit && existsSync(pkgPath)) {
+    const pkg = JSON.parse(await readFile(pkgPath, "utf8"));
+    if (pkg.scripts?.prepare === "simple-git-hooks") {
+      delete pkg.scripts.prepare;
+      await writeFile(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
     }
   }
 
