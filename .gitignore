@@ -4,3 +4,8 @@ node_modules
 
 template/dist
 template/bun.lock
+template/.env
+template/.env.*
+!template/.env.example
+template/test-results
+template/playwright-report
