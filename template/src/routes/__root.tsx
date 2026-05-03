@@ -1,10 +1,11 @@
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
-import { HeadContent, Link, Outlet, createRootRoute } from '@tanstack/react-router'
+import { HeadContent, Link, Outlet, createRootRouteWithContext } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
 import { Toaster } from '@/components/ui/sonner'
 import { Providers } from '@/providers'
+import type { RouterContext } from '@/router'
 
 import { ErrorComponent } from './-error'
 import { NotFound } from './-not-found'
@@ -60,7 +61,7 @@ const RootComponent = () => {
   )
 }
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
   notFoundComponent: NotFound,
   errorComponent: ErrorComponent,
