@@ -52,7 +52,7 @@ export const useFormPersist = <T extends FieldValues>(
     try {
       const raw = window.localStorage.getItem(formDraftStorageKey(key))
       if (raw) {
-        const parsed: Partial<T> = JSON.parse(raw)
+        const parsed = JSON.parse(raw) as Partial<T>
         const merged = { ...form.getValues(), ...parsed }
         lastSerializedRef.current = JSON.stringify(stripFiles(merged))
         form.reset(merged)
