@@ -11,6 +11,8 @@
     "format": "oxfmt",
     "typecheck": "tsc -b --noEmit",
     "preview": "vite preview",
+    "test": "vitest",
+    "test:run": "vitest run",
     "e2e": "playwright test",
     "prepare": "simple-git-hooks"
   },
@@ -58,7 +60,8 @@
     "oxlint": "^1.62.0",
     "simple-git-hooks": "^2.13.0",
     "typescript": "~6.0.2",
-    "vite": "^8.0.10"
+    "vite": "^8.0.10",
+    "vitest": "^4.1.5"
   },
   "simple-git-hooks": {
     "pre-commit": "npx --no -- lint-staged"

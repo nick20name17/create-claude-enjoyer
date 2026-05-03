@@ -94,6 +94,10 @@ async function run() {
     await confirm({ message: "Dark mode support?", initialValue: true }),
   );
 
+  const useVitest = checkCancel(
+    await confirm({ message: "Vitest unit tests?", initialValue: false }),
+  );
+
   const gitInit = checkCancel(
     await confirm({ message: "git init?", initialValue: true }),
   );
@@ -190,6 +194,32 @@ export const Providers = ({ children }: PropsWithChildren) => {
     let css = await readFile(cssPath, "utf8");
     css = css.replace(/\n\.dark \{[\s\S]*?\n\}\n/, "\n");
     await writeFile(cssPath, css);
+  }
+
+  // No Vitest — drop dep, scripts, vite.config test block, and CI step
+  if (!useVitest) {
+    const pkg = JSON.parse(await readFile(pkgPath, "utf8"));
+    delete pkg.scripts?.test;
+    delete pkg.scripts?.["test:run"];
+    delete pkg.devDependencies?.vitest;
+    await writeFile(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
+
+    const viteConfigPath = join(target, "vite.config.ts");
+    let viteCfg = await readFile(viteConfigPath, "utf8");
+    viteCfg = viteCfg
+      .replace("from 'vitest/config'", "from 'vite'")
+      .replace(
+        ",\n  test: { include: ['src/**/*.test.ts'], passWithNoTests: true }",
+        "",
+      );
+    await writeFile(viteConfigPath, viteCfg);
+
+    const ciPath = join(target, ".github/workflows/ci.yml");
+    if (existsSync(ciPath)) {
+      let ci = await readFile(ciPath, "utf8");
+      ci = ci.replace("      - run: bun run test:run\n", "");
+      await writeFile(ciPath, ci);
+    }
   }
 
   // No git init — drop `prepare` (otherwise simple-git-hooks fails during install)
