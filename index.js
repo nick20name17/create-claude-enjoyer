@@ -131,19 +131,6 @@ async function run() {
     await mkdir(claudeDir, { recursive: true });
     const settings = {
       permissions: { deny: PM_DENY[chosenPm] },
-      hooks: {
-        PreToolUse: [
-          {
-            matcher: "Bash",
-            hooks: [
-              {
-                type: "command",
-                command: "node $CLAUDE_PROJECT_DIR/.claude/hooks/typecheck-on-commit.mjs",
-              },
-            ],
-          },
-        ],
-      },
     };
     await writeFile(
       join(claudeDir, "settings.json"),
