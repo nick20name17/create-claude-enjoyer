@@ -1,6 +1,6 @@
 import { isAxiosError, type AxiosError } from 'axios'
 
-const FALLBACK_ERROR_MESSAGE = 'Щось пішло не так'
+const FALLBACK_ERROR_MESSAGE = 'Something went wrong'
 
 const fromAxios = (error: AxiosError): string => {
   const data = error.response?.data

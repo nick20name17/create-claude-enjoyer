@@ -1,70 +1,70 @@
 # create-claude-enjoyer
 
-Інтерактивний скаффолдер для проекту claude-enjoyer.
+Interactive scaffolder for the claude-enjoyer project.
 
-## Використання (після публікації)
+## Usage (after publishing)
 
 ```bash
 bun create claude-enjoyer my-app
-# або
+# or
 npm create claude-enjoyer@latest my-app
 ```
 
-## Локальне тестування (без публікації)
+## Local testing (without publishing)
 
 ```bash
 cd create-claude-enjoyer
-bun install            # встановити @clack/prompts
+bun install            # install @clack/prompts
 
-# варіант 1: запустити напряму
+# option 1: run directly
 node index.js test-app
 
-# варіант 2: через npm link
+# option 2: via npm link
 npm link
-bun create claude-enjoyer test-app    # десь в іншій папці
+bun create claude-enjoyer test-app    # somewhere in another folder
 
-# варіант 3: bun підтримує локальні шляхи
+# option 3: bun supports local paths
 bun create ./create-claude-enjoyer test-app
 ```
 
-## Що питає
+## What it asks
 
-- Назва проекту
-- Які MCP сервери підключити (генерує `.mcp.json`)
-- Які скіли увімкнути (генерує `.claude/settings.json`)
-- Package manager для `install`
-- `git init` чи ні
+- Project name
+- Which MCP servers to wire up (generates `.mcp.json`)
+- Which skills to enable (generates `.claude/settings.json`)
+- Package manager for `install`
+- `git init` or not
 
-## Як оновлювати template
+## Updating the template
 
-Коли допиляєш `~/Desktop/claude-enjoyer/`, синхронізуй:
+When you tweak `~/Desktop/claude-enjoyer/`, sync it:
 
 ```bash
 cd ~/Desktop/create-claude-enjoyer
 bun run sync
 ```
 
-Скрипт rsync'ає поточний стан проекту в `template/` (без `node_modules`,
-`bun.lock`, `dist`).
+The script rsyncs the current project state into `template/` (excluding
+`node_modules`, `bun.lock`, `dist`).
 
-## Як додати новий MCP / скіл
+## Adding a new MCP / skill
 
-У `index.js`:
+In `index.js`:
 
-- розшир `MCP_REGISTRY` об'єктом `{ label, config }`
-- додай рядок до `SKILLS`
+- extend `MCP_REGISTRY` with a `{ label, config }` object
+- add a line to `SKILLS`
 
-## Публікація
+## Publishing
 
 ```bash
 npm publish --access public
 ```
 
-Назва пакета **обов'язково** з префіксом `create-` — інакше `bun create` /
-`npm create` його не знайдуть.
+The package name **must** start with `create-` — otherwise `bun create` /
+`npm create` won't find it.
 
-## Чому `_gitignore`
+## Why `_gitignore`
 
-npm/bun не публікують файли з назвою `.gitignore` як частину пакета (їх
-використовують для exclusion-логіки). Тому в `template/` лежить
-`_gitignore`, а CLI перейменовує його в `.gitignore` після копії.
+npm/bun don't publish files named `.gitignore` as part of the package (they
+use them for exclusion logic). So `template/` ships `_gitignore`, and the CLI
+renames it to `.gitignore` after copying.

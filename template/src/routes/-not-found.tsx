@@ -10,9 +10,9 @@ export const NotFound = () => {
       </p>
 
       <div className='relative flex flex-col items-center gap-2 text-center'>
-        <h1 className='text-3xl font-bold sm:text-4xl'>Сторінку не знайдено</h1>
+        <h1 className='text-3xl font-bold sm:text-4xl'>Page not found</h1>
         <p className='text-muted-foreground max-w-sm text-sm sm:text-base'>
-          Ця сторінка не існує або була переміщена. Перевірте адресу або поверніться на головну.
+          This page doesn't exist or has been moved. Check the URL or return home.
         </p>
 
         <div className='mt-4 flex gap-3'>
@@ -20,10 +20,10 @@ export const NotFound = () => {
             variant='outline'
             onClick={() => window.history.back()}
           >
-            Назад
+            Back
           </Button>
           <Button asChild>
-            <Link to='/'>На головну</Link>
+            <Link to='/'>Home</Link>
           </Button>
         </div>
       </div>

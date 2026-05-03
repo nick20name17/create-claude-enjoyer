@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
 
   const signInMutation = useMutation({
     mutationFn: authService.signIn,
-    meta: { successMessage: 'Вхід виконано' },
+    meta: { successMessage: 'Signed in' },
     onSuccess: async next => {
       apply(next)
       await navigate({ to: '/dashboard', replace: true })

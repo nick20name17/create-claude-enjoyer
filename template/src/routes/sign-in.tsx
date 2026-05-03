@@ -34,7 +34,7 @@ const SignInComponent = () => {
     <div className='flex min-h-dvh items-center justify-center p-4'>
       <Card className='w-full max-w-sm'>
         <CardHeader>
-          <CardTitle>Вхід</CardTitle>
+          <CardTitle>Sign in</CardTitle>
           <CardDescription>
             demo: <code>demo@demo.com</code> / <code>demo1234</code>
           </CardDescription>
@@ -62,7 +62,7 @@ const SignInComponent = () => {
               <FormField
                 control={form.control}
                 name='password'
-                label='Пароль'
+                label='Password'
               >
                 {field => (
                   <PasswordInput
@@ -82,7 +82,7 @@ const SignInComponent = () => {
                     className='animate-spin'
                   />
                 ) : (
-                  'Увійти'
+                  'Sign in'
                 )}
               </Button>
             </FieldGroup>
@@ -98,5 +98,5 @@ export const Route = createFileRoute('/sign-in')({
   beforeLoad: () => {
     if (getSession()) throw redirect({ to: '/dashboard', replace: true })
   },
-  head: () => ({ meta: [{ title: 'Вхід' }] })
+  head: () => ({ meta: [{ title: 'Sign in' }] })
 })

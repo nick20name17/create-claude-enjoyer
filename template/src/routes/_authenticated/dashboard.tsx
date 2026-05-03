@@ -12,14 +12,14 @@ function DashboardComponent() {
     <div className='p-8'>
       <h1 className='text-3xl font-semibold'>Dashboard</h1>
       <p className='text-muted-foreground mt-2 text-sm'>
-        Привіт, <span className='font-medium text-foreground'>{user?.name}</span> ({user?.email})
+        Hi, <span className='font-medium text-foreground'>{user?.name}</span> ({user?.email})
       </p>
       <Button
         className='mt-4'
         variant='outline'
         onClick={logout}
       >
-        Вийти
+        Sign out
       </Button>
     </div>
   )

@@ -17,9 +17,9 @@ export const ErrorComponent = ({ error }: { error: Error }) => {
           />
         </div>
 
-        <h1 className='text-3xl font-bold sm:text-4xl'>Щось пішло не так</h1>
+        <h1 className='text-3xl font-bold sm:text-4xl'>Something went wrong</h1>
         <p className='text-muted-foreground max-w-lg text-sm sm:text-base'>
-          Виникла непередбачена помилка. Спробуйте оновити сторінку або поверніться на головну.
+          An unexpected error occurred. Try refreshing the page or return home.
         </p>
 
         {import.meta.env.DEV && (
@@ -33,10 +33,10 @@ export const ErrorComponent = ({ error }: { error: Error }) => {
             variant='outline'
             onClick={() => router.invalidate()}
           >
-            Спробувати знову
+            Try again
           </Button>
           <Button asChild>
-            <Link to='/'>На головну</Link>
+            <Link to='/'>Home</Link>
           </Button>
         </div>
       </div>

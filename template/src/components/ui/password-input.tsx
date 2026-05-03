@@ -19,7 +19,7 @@ export const PasswordInput = ({ className, ...props }: React.ComponentProps<'inp
       <button
         type='button'
         onClick={() => setVisible(v => !v)}
-        aria-label={visible ? 'Сховати пароль' : 'Показати пароль'}
+        aria-label={visible ? 'Hide password' : 'Show password'}
         className='absolute inset-y-0 right-0 flex items-center px-2.5 text-muted-foreground transition-colors hover:text-foreground'
       >
         <HugeiconsIcon

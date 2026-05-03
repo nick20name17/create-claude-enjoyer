@@ -23,7 +23,7 @@ const PMS = [
   { value: "bun", label: "bun" },
   { value: "pnpm", label: "pnpm" },
   { value: "npm", label: "npm" },
-  { value: "skip", label: "не встановлювати" },
+  { value: "skip", label: "skip install" },
 ];
 
 const MCP_RUNNERS = {
@@ -41,7 +41,7 @@ const PM_DENY = {
 
 function checkCancel(value) {
   if (isCancel(value)) {
-    cancel("Скасовано.");
+    cancel("Cancelled.");
     process.exit(0);
   }
   return value;
@@ -54,13 +54,13 @@ async function run() {
   const name = checkCancel(
     argName ??
       (await text({
-        message: "Назва проекту?",
+        message: "Project name?",
         placeholder: "my-app",
         defaultValue: "my-app",
         validate: (v) => {
           if (!v) return undefined;
           if (!/^[a-z0-9][a-z0-9-_]*$/i.test(v))
-            return "Тільки літери/цифри/-/_";
+            return "Only letters/digits/-/_";
         },
       })),
   );
@@ -71,12 +71,12 @@ async function run() {
   if (existsSync(target)) {
     const overwrite = checkCancel(
       await confirm({
-        message: `Папка "${name}" існує. Перезаписати?`,
+        message: `Folder "${name}" exists. Overwrite?`,
         initialValue: false,
       }),
     );
     if (!overwrite) {
-      cancel("Папка вже існує — скасовано.");
+      cancel("Folder already exists — cancelled.");
       process.exit(0);
     }
     shouldClean = true;
@@ -84,14 +84,14 @@ async function run() {
 
   const chosenPm = checkCancel(
     await select({
-      message: "Встановити залежності?",
+      message: "Install dependencies?",
       options: PMS,
       initialValue: "bun",
     }),
   );
 
   const darkMode = checkCancel(
-    await confirm({ message: "Підтримка темної теми?", initialValue: true }),
+    await confirm({ message: "Dark mode support?", initialValue: true }),
   );
 
   const gitInit = checkCancel(
@@ -99,15 +99,15 @@ async function run() {
   );
 
   const s = spinner();
-  s.start("Копіюю шаблон");
+  s.start("Copying template");
   if (shouldClean) await rm(target, { recursive: true, force: true });
   await cp(TEMPLATE, target, { recursive: true });
-  // _gitignore -> .gitignore (npm не публікує .gitignore as-is)
+  // _gitignore -> .gitignore (npm doesn't publish .gitignore as-is)
   const ignoreSrc = join(target, "_gitignore");
   if (existsSync(ignoreSrc)) await rename(ignoreSrc, join(target, ".gitignore"));
-  s.stop("Шаблон скопійовано");
+  s.stop("Template copied");
 
-  // package.json: підставити назву
+  // package.json: set name
   const pkgPath = join(target, "package.json");
   if (existsSync(pkgPath)) {
     const pkg = JSON.parse(await readFile(pkgPath, "utf8"));
@@ -115,7 +115,7 @@ async function run() {
     await writeFile(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
   }
 
-  // .mcp.json: переписати command/args під обраний package manager
+  // .mcp.json: rewrite command/args for the chosen package manager
   const mcpPath = join(target, ".mcp.json");
   if (existsSync(mcpPath)) {
     const mcp = JSON.parse(await readFile(mcpPath, "utf8"));
@@ -129,7 +129,7 @@ async function run() {
     await writeFile(mcpPath, JSON.stringify(mcp, null, 2) + "\n");
   }
 
-  // .claude/settings.json + CLAUDE.md: форсимо обраний package manager
+  // .claude/settings.json + CLAUDE.md: pin chosen package manager
   if (chosenPm !== "skip") {
     const claudeDir = join(target, ".claude");
     await mkdir(claudeDir, { recursive: true });
@@ -151,7 +151,7 @@ async function run() {
     }
   }
 
-  // Без темної теми — викидаємо ThemeProvider, .dark блок CSS, форсимо theme='light' у Sonner
+  // No dark mode — drop ThemeProvider, .dark CSS block, force theme='light' in Sonner
   if (!darkMode) {
     await rm(join(target, "src/providers/theme.tsx"), { force: true });
 
@@ -190,7 +190,7 @@ export const Providers = ({ children }: PropsWithChildren) => {
     await writeFile(cssPath, css);
   }
 
-  // Якщо git init не зробили — приберемо `prepare` (інакше simple-git-hooks впаде під час install)
+  // No git init — drop `prepare` (otherwise simple-git-hooks fails during install)
   if (!gitInit && existsSync(pkgPath)) {
     const pkg = JSON.parse(await readFile(pkgPath, "utf8"));
     if (pkg.scripts?.prepare === "simple-git-hooks") {
@@ -207,17 +207,17 @@ export const Providers = ({ children }: PropsWithChildren) => {
     s.start(`${chosenPm} install`);
     try {
       await execIn(target, chosenPm, ["install"]);
-      s.stop(`${chosenPm} install — готово`);
+      s.stop(`${chosenPm} install — done`);
     } catch {
-      s.stop(`${chosenPm} install не вдалося — запусти вручну`);
+      s.stop(`${chosenPm} install failed — run it manually`);
     }
   }
 
-  note(`📁 ${target}`, "Готово");
+  note(`📁 ${target}`, "Done");
 
   const runner = MCP_RUNNERS[chosenPm];
   const skillCmd = [runner.command, ...runner.prefix, "skills", "add", "shadcn/ui"].join(" ");
-  note(`shadcn skill (опційно, для Claude Code):\n  cd ${name} && ${skillCmd}`, "AI context");
+  note(`shadcn skill (optional, for Claude Code):\n  cd ${name} && ${skillCmd}`, "AI context");
 
   outro(
     chosenPm === "skip"

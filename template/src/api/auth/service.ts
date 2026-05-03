@@ -8,7 +8,7 @@ export const authService = {
   signIn: async ({ email, password }: SignInPayload): Promise<Session> => {
     await sleep(600)
     if (email !== HARDCODED.email || password !== HARDCODED.password) {
-      throw new Error('Невірний email або пароль')
+      throw new Error('Invalid email or password')
     }
     return { user: { id: '1', email, name: 'Demo User' } }
   }
