@@ -90,6 +90,10 @@ async function run() {
     }),
   );
 
+  const darkMode = checkCancel(
+    await confirm({ message: "Підтримка темної теми?", initialValue: true }),
+  );
+
   const gitInit = checkCancel(
     await confirm({ message: "git init?", initialValue: true }),
   );
@@ -145,6 +149,42 @@ async function run() {
         await writeFile(claudeMdPath, md + block);
       }
     }
+  }
+
+  // Без темної теми — викидаємо ThemeProvider, .dark блок CSS, форсимо theme='light' у Sonner
+  if (!darkMode) {
+    await rm(join(target, "src/providers/theme.tsx"), { force: true });
+
+    await writeFile(
+      join(target, "src/providers/index.tsx"),
+      `import type { PropsWithChildren } from 'react'
+
+import { TooltipProvider } from '@/components/ui/tooltip'
+
+import { ReactQueryProvider } from './react-query'
+
+export const Providers = ({ children }: PropsWithChildren) => {
+  return (
+    <ReactQueryProvider>
+      <TooltipProvider>{children}</TooltipProvider>
+    </ReactQueryProvider>
+  )
+}
+`,
+    );
+
+    const sonnerPath = join(target, "src/components/ui/sonner.tsx");
+    let sonner = await readFile(sonnerPath, "utf8");
+    sonner = sonner
+      .replace(/\n\nimport \{ useTheme \} from '@\/providers\/theme'\n/, "\n")
+      .replace(/\n  const \{ theme = 'system' \} = useTheme\(\)\n\n/, "\n")
+      .replace("theme={theme as ToasterProps['theme']}", "theme='light'");
+    await writeFile(sonnerPath, sonner);
+
+    const cssPath = join(target, "src/index.css");
+    let css = await readFile(cssPath, "utf8");
+    css = css.replace(/\n\.dark \{[\s\S]*?\n\}\n/, "\n");
+    await writeFile(cssPath, css);
   }
 
   // Якщо git init не зробили — приберемо `prepare` (інакше simple-git-hooks впаде під час install)
