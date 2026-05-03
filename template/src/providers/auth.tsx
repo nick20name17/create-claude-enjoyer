@@ -1,15 +1,25 @@
-import { type UseMutationResult, useMutation } from '@tanstack/react-query'
-import { useNavigate, useRouter } from '@tanstack/react-router'
+import {
+  type UseMutationResult,
+  useMutation,
+  useQuery,
+  useQueryClient
+} from '@tanstack/react-query'
+import { useNavigate, useRouter, useSearch } from '@tanstack/react-router'
 import { type PropsWithChildren, createContext, use, useState } from 'react'
 
-import type { Session, SignInPayload, User } from '@/api/auth/schema'
+import type { Session, SignInPayload, SignInResponse, SignUpPayload } from '@/api/auth/schema'
 import { authService } from '@/api/auth/service'
+import { USER_QUERY_KEYS, getUserQuery } from '@/api/user/query'
+import type { User } from '@/api/user/schema'
+import { AUTH_REDIRECTS } from '@/constants/api'
 import { clearSession, getSession, setSession } from '@/helpers/auth'
 
 interface AuthContextValue {
   user: User | null
   isAuthenticated: boolean
-  signInMutation: UseMutationResult<Session, Error, SignInPayload>
+  isUserLoading: boolean
+  signInMutation: UseMutationResult<SignInResponse, Error, SignInPayload>
+  signUpMutation: UseMutationResult<User, Error, SignUpPayload>
   logout: () => Promise<void>
 }
 
@@ -17,35 +27,67 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 export const AuthProvider = ({ children }: PropsWithChildren) => {
   const navigate = useNavigate()
-  const router = useRouter()
-  const [session, setSessionState] = useState<Session | null>(getSession)
+  const { redirect } = useSearch({ strict: false })
 
-  const apply = (next: Session | null) => {
+  const router = useRouter()
+  const queryClient = useQueryClient()
+
+  const [session, setSessionState] = useState<Session | null>(getSession)
+  const userId = session?.user.id ?? null
+
+  const applySession = (next: Session | null) => {
     if (next) setSession(next)
     else clearSession()
     setSessionState(next)
   }
 
-  const signInMutation = useMutation({
-    mutationFn: authService.signIn,
-    meta: { successMessage: 'Signed in' },
-    onSuccess: async next => {
-      apply(next)
-      await navigate({ to: '/dashboard', replace: true })
-      await router.invalidate()
-    }
+  const { data: user, isLoading: isUserLoading } = useQuery({
+    ...getUserQuery(userId),
+    placeholderData: session?.user,
+    gcTime: 1000 * 60 * 60 * 24
   })
 
   const logout = async () => {
-    apply(null)
-    await navigate({ to: '/', replace: true })
-    await router.invalidate()
+    applySession(null)
+    await navigate({ to: AUTH_REDIRECTS.logout, replace: true })
+    await router.invalidate({ sync: true })
+    queryClient.clear()
   }
 
+  const signInMutation = useMutation({
+    mutationFn: authService.signIn,
+    meta: { successMessage: 'Signed in' },
+    onSuccess: async response => {
+      applySession(response)
+
+      queryClient.setQueryData(USER_QUERY_KEYS.detail(response.user.id), response.user)
+      await queryClient.invalidateQueries({ queryKey: USER_QUERY_KEYS.all() })
+
+      const to =
+        typeof redirect === 'string' && redirect.startsWith('/')
+          ? redirect
+          : AUTH_REDIRECTS.signInSuccess
+
+      await navigate({ to, replace: true })
+      await router.invalidate({ sync: true })
+    }
+  })
+
+  const signUpMutation = useMutation({
+    mutationFn: authService.signUp,
+    meta: { successMessage: 'Account created' },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: USER_QUERY_KEYS.all() })
+      await navigate({ to: AUTH_REDIRECTS.logout, replace: true })
+    }
+  })
+
   const value: AuthContextValue = {
-    user: session?.user ?? null,
-    isAuthenticated: !!session,
+    user: user ?? null,
+    isAuthenticated: !!userId,
+    isUserLoading,
     signInMutation,
+    signUpMutation,
     logout
   }
 

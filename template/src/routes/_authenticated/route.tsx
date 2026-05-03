@@ -1,5 +1,6 @@
 import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 
+import { AUTH_REDIRECTS } from '@/constants/api'
 import { getSession } from '@/helpers/auth'
 
 const AuthenticatedLayout = () => {
@@ -12,7 +13,13 @@ const AuthenticatedLayout = () => {
 
 export const Route = createFileRoute('/_authenticated')({
   component: AuthenticatedLayout,
-  beforeLoad: () => {
-    if (!getSession()) throw redirect({ to: '/sign-in', replace: true })
+  beforeLoad: ({ location }) => {
+    if (!getSession()) {
+      throw redirect({
+        to: AUTH_REDIRECTS.logout,
+        search: { redirect: location.href },
+        replace: true
+      })
+    }
   }
 })

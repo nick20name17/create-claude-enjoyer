@@ -1,10 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loading03Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
 
-import { type SignInPayload, SignInSchema } from '@/api/auth/schema'
+import { type SignUpPayload, SignUpSchema } from '@/api/auth/schema'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -17,27 +17,24 @@ import { FieldGroup } from '@/components/ui/field'
 import { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/password-input'
-import { getSession } from '@/helpers/auth'
 import { useAuth } from '@/providers/auth'
 
-const SignInComponent = () => {
-  const { signInMutation } = useAuth()
+const SignUpComponent = () => {
+  const { signUpMutation } = useAuth()
 
-  const form = useForm<SignInPayload>({
-    resolver: zodResolver(SignInSchema),
-    defaultValues: { email: '', password: '' }
+  const form = useForm<SignUpPayload>({
+    resolver: zodResolver(SignUpSchema),
+    defaultValues: { email: '', password: '', name: '' }
   })
 
-  const onSubmit = form.handleSubmit(values => signInMutation.mutate(values))
+  const onSubmit = form.handleSubmit(values => signUpMutation.mutate(values))
 
   return (
     <div className='flex min-h-dvh items-center justify-center p-4'>
       <Card className='w-full max-w-sm'>
         <CardHeader>
-          <CardTitle>Sign in</CardTitle>
-          <CardDescription>
-            demo: <code>demo@demo.com</code> / <code>demo1234</code>
-          </CardDescription>
+          <CardTitle>Sign up</CardTitle>
+          <CardDescription>Create a demo account (mocked).</CardDescription>
         </CardHeader>
         <CardContent>
           <form
@@ -45,6 +42,18 @@ const SignInComponent = () => {
             noValidate
           >
             <FieldGroup>
+              <FormField
+                control={form.control}
+                name='name'
+                label='Name'
+              >
+                {field => (
+                  <Input
+                    {...field}
+                    autoComplete='name'
+                  />
+                )}
+              </FormField>
               <FormField
                 control={form.control}
                 name='email'
@@ -67,24 +76,33 @@ const SignInComponent = () => {
                 {field => (
                   <PasswordInput
                     {...field}
-                    autoComplete='current-password'
+                    autoComplete='new-password'
                   />
                 )}
               </FormField>
               <Button
                 type='submit'
                 className='w-full'
-                disabled={signInMutation.isPending}
+                disabled={signUpMutation.isPending}
               >
-                {signInMutation.isPending ? (
+                {signUpMutation.isPending ? (
                   <HugeiconsIcon
                     icon={Loading03Icon}
                     className='animate-spin'
                   />
                 ) : (
-                  'Sign in'
+                  'Sign up'
                 )}
               </Button>
+              <p className='text-muted-foreground text-center text-sm'>
+                Have an account?{' '}
+                <Link
+                  to='/sign-in'
+                  className='underline'
+                >
+                  Sign in
+                </Link>
+              </p>
             </FieldGroup>
           </form>
         </CardContent>
@@ -93,10 +111,7 @@ const SignInComponent = () => {
   )
 }
 
-export const Route = createFileRoute('/sign-in')({
-  component: SignInComponent,
-  beforeLoad: () => {
-    if (getSession()) throw redirect({ to: '/dashboard', replace: true })
-  },
-  head: () => ({ meta: [{ title: 'Sign in' }] })
+export const Route = createFileRoute('/_auth/sign-up')({
+  component: SignUpComponent,
+  head: () => ({ meta: [{ title: 'Sign up' }] })
 })
