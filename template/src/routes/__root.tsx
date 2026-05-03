@@ -36,13 +36,13 @@ const RootComponent = () => {
           closeButton
           duration={5_000}
         />
-          <TanStackDevtools
-            config={{ position: 'bottom-right' }}
-            plugins={[
-              { name: 'TanStack Router', render: <TanStackRouterDevtoolsPanel /> },
-              { name: 'TanStack Query', render: <ReactQueryDevtoolsPanel /> }
-            ]}
-          />
+        <TanStackDevtools
+          config={{ position: 'bottom-right' }}
+          plugins={[
+            { name: 'TanStack Router', render: <TanStackRouterDevtoolsPanel /> },
+            { name: 'TanStack Query', render: <ReactQueryDevtoolsPanel /> }
+          ]}
+        />
       </Providers>
     </>
   )
