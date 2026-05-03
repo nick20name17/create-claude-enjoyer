@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type PropsWithChildren } from 'react'
+import { createContext, use, useEffect, useState, type PropsWithChildren } from 'react'
 
 type Theme = 'dark' | 'light' | 'system'
 
@@ -43,7 +43,7 @@ export const ThemeProvider = ({
 }
 
 export const useTheme = () => {
-  const ctx = useContext(ThemeProviderContext)
+  const ctx = use(ThemeProviderContext)
   if (!ctx) throw new Error('useTheme must be used within ThemeProvider')
   return ctx
 }

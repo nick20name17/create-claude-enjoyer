@@ -1,14 +1,45 @@
 import { AxiosError, type InternalAxiosRequestConfig, create } from 'axios'
 
+import type { Tokens } from '@/api/auth/schema'
+import { authService } from '@/api/auth/service'
 import { API_BASE_URL, AUTH_REDIRECTS } from '@/constants/api'
-import { clearSession, getSession } from '@/helpers/auth'
-
-import { memoizedRefreshToken } from './helpers'
+import { clearSession, getSession, updateTokens } from '@/helpers/auth'
 
 declare module 'axios' {
   interface InternalAxiosRequestConfig {
     retried?: boolean
   }
+}
+
+let refreshPromise: Promise<Tokens> | null = null
+
+const refreshToken = async () => {
+  const session = getSession()
+
+  if (!session?.refresh) {
+    clearSession()
+    throw new Error('No refresh token available')
+  }
+
+  try {
+    const tokens = await authService.refresh({ refresh: session.refresh })
+    if (!tokens.access) {
+      clearSession()
+      throw new Error('No access token received')
+    }
+    updateTokens(tokens)
+    return tokens
+  } catch (error) {
+    clearSession()
+    throw error
+  }
+}
+
+const memoizedRefreshToken = () => {
+  refreshPromise ??= refreshToken().finally(() => {
+    refreshPromise = null
+  })
+  return refreshPromise
 }
 
 export const api = create({
