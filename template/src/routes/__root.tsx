@@ -28,6 +28,18 @@ const RootComponent = () => {
           >
             About
           </Link>
+          <Link
+            to='/sign-in'
+            activeProps={{ className: 'font-bold' }}
+          >
+            Sign in
+          </Link>
+          <Link
+            to='/dashboard'
+            activeProps={{ className: 'font-bold' }}
+          >
+            Dashboard
+          </Link>
         </div>
         <hr />
         <Outlet />

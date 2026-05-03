@@ -161,12 +161,15 @@ async function run() {
 
 import { TooltipProvider } from '@/components/ui/tooltip'
 
+import { AuthProvider } from './auth'
 import { ReactQueryProvider } from './react-query'
 
 export const Providers = ({ children }: PropsWithChildren) => {
   return (
     <ReactQueryProvider>
-      <TooltipProvider>{children}</TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>{children}</TooltipProvider>
+      </AuthProvider>
     </ReactQueryProvider>
   )
 }
