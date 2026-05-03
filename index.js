@@ -133,13 +133,15 @@ async function run() {
   if (chosenPm !== "skip") {
     const claudeDir = join(target, ".claude");
     await mkdir(claudeDir, { recursive: true });
-    const settings = {
-      permissions: { deny: PM_DENY[chosenPm] },
+    const settingsPath = join(claudeDir, "settings.json");
+    const settings = existsSync(settingsPath)
+      ? JSON.parse(await readFile(settingsPath, "utf8"))
+      : {};
+    settings.permissions = {
+      ...(settings.permissions ?? {}),
+      deny: PM_DENY[chosenPm],
     };
-    await writeFile(
-      join(claudeDir, "settings.json"),
-      JSON.stringify(settings, null, 2) + "\n",
-    );
+    await writeFile(settingsPath, JSON.stringify(settings, null, 2) + "\n");
 
     const claudeMdPath = join(target, "CLAUDE.md");
     if (existsSync(claudeMdPath)) {
