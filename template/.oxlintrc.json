@@ -8,6 +8,13 @@
     "react/rules-of-hooks": "error",
     "react/exhaustive-deps": "error",
     "no-console": "warn",
-    "no-debugger": "error"
-  }
+    "no-debugger": "error",
+    "import/no-unassigned-import": "off"
+  },
+  "overrides": [
+    {
+      "files": ["src/components/ui/**"],
+      "rules": { "no-shadow": "off", "react/no-array-index-key": "off" }
+    }
+  ]
 }
