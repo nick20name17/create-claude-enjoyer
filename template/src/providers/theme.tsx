@@ -1,22 +1,10 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type PropsWithChildren
-} from 'react'
+import { createContext, useContext, useEffect, useState, type PropsWithChildren } from 'react'
 
 type Theme = 'dark' | 'light' | 'system'
 
-type ThemeProviderProps = PropsWithChildren<{
-  defaultTheme?: Theme
-  storageKey?: string
-}>
+type ThemeProviderProps = PropsWithChildren<{ defaultTheme?: Theme; storageKey?: string }>
 
-type ThemeProviderState = {
-  theme: Theme
-  setTheme: (theme: Theme) => void
-}
+type ThemeProviderState = { theme: Theme; setTheme: (theme: Theme) => void }
 
 const ThemeProviderContext = createContext<ThemeProviderState | undefined>(undefined)
 
@@ -45,15 +33,13 @@ export const ThemeProvider = ({
 
   const value: ThemeProviderState = {
     theme,
-    setTheme: (next) => {
+    setTheme: next => {
       localStorage.setItem(storageKey, next)
       setTheme(next)
     }
   }
 
-  return (
-    <ThemeProviderContext.Provider value={value}>{children}</ThemeProviderContext.Provider>
-  )
+  return <ThemeProviderContext.Provider value={value}>{children}</ThemeProviderContext.Provider>
 }
 
 export const useTheme = () => {

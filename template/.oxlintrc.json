@@ -7,6 +7,10 @@
     "react/react-in-jsx-scope": "off",
     "react/rules-of-hooks": "error",
     "react/exhaustive-deps": "error",
+    "react/jsx-no-constructed-context-values": "off",
+    "react_perf/jsx-no-new-object-as-prop": "off",
+    "react_perf/jsx-no-new-array-as-prop": "off",
+    "react_perf/jsx-no-new-function-as-prop": "off",
     "no-console": "warn",
     "no-debugger": "error",
     "import/no-unassigned-import": "off"

@@ -1,5 +1,4 @@
-import { ViewIcon, ViewOffIcon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
+import { Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
 
 import { Input } from '@/components/ui/input'
@@ -7,6 +6,7 @@ import { cn } from '@/lib/utils'
 
 export const PasswordInput = ({ className, ...props }: React.ComponentProps<'input'>) => {
   const [visible, setVisible] = useState(false)
+  const Icon = visible ? EyeOff : Eye
 
   return (
     <div className='relative'>
@@ -20,12 +20,9 @@ export const PasswordInput = ({ className, ...props }: React.ComponentProps<'inp
         type='button'
         onClick={() => setVisible(v => !v)}
         aria-label={visible ? 'Hide password' : 'Show password'}
-        className='absolute inset-y-0 right-0 flex items-center px-2.5 text-muted-foreground transition-colors hover:text-foreground'
+        className='text-muted-foreground hover:text-foreground absolute inset-y-0 right-0 flex items-center px-2.5 transition-colors'
       >
-        <HugeiconsIcon
-          icon={visible ? ViewOffIcon : ViewIcon}
-          size={16}
-        />
+        <Icon size={16} />
       </button>
     </div>
   )

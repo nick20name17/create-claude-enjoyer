@@ -1,6 +1,5 @@
-import { Alert02Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
 import { Link, useRouter } from '@tanstack/react-router'
+import { TriangleAlert } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 
@@ -11,10 +10,7 @@ export const ErrorComponent = ({ error }: { error: Error }) => {
     <div className='flex min-h-dvh flex-col items-center justify-center px-4'>
       <div className='flex flex-col items-center gap-2 text-center'>
         <div className='bg-destructive/10 text-destructive mb-2 flex size-16 items-center justify-center rounded-full'>
-          <HugeiconsIcon
-            icon={Alert02Icon}
-            className='size-8'
-          />
+          <TriangleAlert className='size-8' />
         </div>
 
         <h1 className='text-3xl font-bold sm:text-4xl'>Something went wrong</h1>

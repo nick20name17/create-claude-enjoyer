@@ -12,8 +12,7 @@ export const getSession = (): Session | null => {
   }
 }
 
-export const setSession = (session: Session) =>
-  localStorage.setItem(KEY, JSON.stringify(session))
+export const setSession = (session: Session) => localStorage.setItem(KEY, JSON.stringify(session))
 
 export const clearSession = () => {
   localStorage.removeItem(KEY)

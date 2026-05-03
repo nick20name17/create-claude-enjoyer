@@ -1,18 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Loading03Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
 import { Link, createFileRoute } from '@tanstack/react-router'
+import { Loader2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 
 import { type SignInPayload, SignInSchema } from '@/api/auth/schema'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { FieldGroup } from '@/components/ui/field'
 import { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
@@ -75,14 +68,7 @@ const SignInComponent = () => {
                 className='w-full'
                 disabled={signInMutation.isPending}
               >
-                {signInMutation.isPending ? (
-                  <HugeiconsIcon
-                    icon={Loading03Icon}
-                    className='animate-spin'
-                  />
-                ) : (
-                  'Sign in'
-                )}
+                {signInMutation.isPending ? <Loader2 className='animate-spin' /> : 'Sign in'}
               </Button>
               <p className='text-muted-foreground text-center text-sm'>
                 No account?{' '}

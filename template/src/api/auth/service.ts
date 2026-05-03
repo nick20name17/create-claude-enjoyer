@@ -1,11 +1,5 @@
 import type { User } from '../user/schema'
-import type {
-  RefreshPayload,
-  SignInPayload,
-  SignInResponse,
-  SignUpPayload,
-  Tokens
-} from './schema'
+import type { RefreshPayload, SignInPayload, SignInResponse, SignUpPayload, Tokens } from './schema'
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
 
