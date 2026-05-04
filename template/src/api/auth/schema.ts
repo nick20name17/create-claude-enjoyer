@@ -1,13 +1,13 @@
 import * as z from 'zod/mini'
 
 import { EmailSchema, PasswordSchema, RequiredStringSchema } from '@/api/schema'
+import { UserSchema } from '@/api/user/schema'
 
-import type { User } from '../user/schema'
-
-export interface Tokens {
-  access: string
-  refresh: string
-}
+export const TokensSchema = z.object({
+  access: z.string(),
+  refresh: z.string()
+})
+export type Tokens = z.infer<typeof TokensSchema>
 
 export const SignInSchema = z.object({ email: EmailSchema, password: PasswordSchema })
 export type SignInPayload = z.infer<typeof SignInSchema>
@@ -23,8 +23,11 @@ export interface RefreshPayload {
   refresh: string
 }
 
-export interface SignInResponse extends Tokens {
-  user: User
-}
+export const SessionSchema = z.object({
+  access: z.string(),
+  refresh: z.string(),
+  user: UserSchema
+})
 
-export type Session = SignInResponse
+export type Session = z.infer<typeof SessionSchema>
+export type SignInResponse = Session

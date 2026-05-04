@@ -1,4 +1,4 @@
-import type { Session, Tokens } from '@/api/auth/schema'
+import { SessionSchema, type Session, type Tokens } from '@/api/auth/schema'
 import { clearAllFormDrafts } from '@/helpers/form-drafts'
 
 const KEY = 'session'
@@ -6,7 +6,7 @@ const KEY = 'session'
 export const getSession = (): Session | null => {
   try {
     const raw = localStorage.getItem(KEY)
-    return raw ? (JSON.parse(raw) as Session) : null
+    return raw ? SessionSchema.parse(JSON.parse(raw)) : null
   } catch {
     return null
   }
