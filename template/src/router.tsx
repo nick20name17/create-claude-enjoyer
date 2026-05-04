@@ -14,7 +14,7 @@ export const createAppRouter = (context: RouterContext) =>
     defaultPreload: 'intent',
     scrollRestoration: true,
     defaultStructuralSharing: true,
-    defaultPreloadStaleTime: 0
+    defaultPreloadStaleTime: 30_000
   })
 
 export type AppRouter = ReturnType<typeof createAppRouter>

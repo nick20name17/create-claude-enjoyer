@@ -2,7 +2,7 @@ import { AxiosError, type InternalAxiosRequestConfig, create } from 'axios'
 
 import type { Tokens } from '@/api/auth/schema'
 import { authService } from '@/api/auth/service'
-import { API_BASE_URL, AUTH_REDIRECTS } from '@/constants/api'
+import { API_BASE_URL } from '@/constants/api'
 import { clearSession, getSession, updateTokens } from '@/helpers/auth'
 
 declare module 'axios' {
@@ -63,7 +63,7 @@ const isAuthRequest = (config: InternalAxiosRequestConfig) => {
 
 const forceLogout = () => {
   clearSession()
-  window.location.replace(AUTH_REDIRECTS.logout)
+  window.dispatchEvent(new Event('auth:force-logout'))
 }
 
 api.interceptors.response.use(
