@@ -47,6 +47,14 @@ function checkCancel(value) {
   return value;
 }
 
+function mustReplace(content, search, replacement, label) {
+  const next = content.replace(search, replacement);
+  if (next === content) {
+    throw new Error(`scaffolder: failed to apply edit "${label}" — pattern not found`);
+  }
+  return next;
+}
+
 async function run() {
   intro("create-claude-enjoyer");
 
@@ -133,7 +141,7 @@ async function run() {
     await writeFile(mcpPath, JSON.stringify(mcp, null, 2) + "\n");
   }
 
-  // .claude/settings.json + CLAUDE.md: pin chosen package manager
+  // .claude/settings.json: pin chosen package manager via permissions.deny
   if (chosenPm !== "skip") {
     const claudeDir = join(target, ".claude");
     await mkdir(claudeDir, { recursive: true });
@@ -146,18 +154,9 @@ async function run() {
       deny: PM_DENY[chosenPm],
     };
     await writeFile(settingsPath, JSON.stringify(settings, null, 2) + "\n");
-
-    const claudeMdPath = join(target, "CLAUDE.md");
-    if (existsSync(claudeMdPath)) {
-      const md = await readFile(claudeMdPath, "utf8");
-      const block = `\n## Package manager\n\n${chosenPm} only. don't use other PMs.\n`;
-      if (!md.includes("## Package manager")) {
-        await writeFile(claudeMdPath, md + block);
-      }
-    }
   }
 
-  // No dark mode — drop ThemeProvider, .dark CSS block, force theme='light' in Sonner
+  // No dark mode — drop ThemeProvider, .dark CSS block, FOUC script, force theme='light' in Sonner
   if (!darkMode) {
     await rm(join(target, "src/providers/theme.tsx"), { force: true });
 
@@ -184,16 +183,25 @@ export const Providers = ({ children }: PropsWithChildren) => {
 
     const sonnerPath = join(target, "src/components/ui/sonner.tsx");
     let sonner = await readFile(sonnerPath, "utf8");
-    sonner = sonner
-      .replace(/\n\nimport \{ useTheme \} from '@\/providers\/theme'\n/, "\n")
-      .replace(/\n  const \{ theme = 'system' \} = useTheme\(\)\n\n/, "\n")
-      .replace("theme={theme as ToasterProps['theme']}", "theme='light'");
+    sonner = mustReplace(sonner, /\n\nimport \{ useTheme \} from '@\/providers\/theme'\n/, "\n", "sonner: useTheme import");
+    sonner = mustReplace(sonner, /\n  const \{ theme = 'system' \} = useTheme\(\)\n\n/, "\n", "sonner: useTheme call");
+    sonner = mustReplace(sonner, "theme={theme as ToasterProps['theme']}", "theme='light'", "sonner: theme prop");
     await writeFile(sonnerPath, sonner);
 
     const cssPath = join(target, "src/index.css");
     let css = await readFile(cssPath, "utf8");
-    css = css.replace(/\n\.dark \{[\s\S]*?\n\}\n/, "\n");
+    css = mustReplace(css, /\n\.dark \{[\s\S]*?\n\}\n/, "\n", "index.css: .dark block");
     await writeFile(cssPath, css);
+
+    const indexHtmlPath = join(target, "index.html");
+    let html = await readFile(indexHtmlPath, "utf8");
+    html = mustReplace(
+      html,
+      /\n    <!-- @scaffolder:dark-mode-init -->[\s\S]*?<!-- \/@scaffolder:dark-mode-init -->\n/,
+      "\n",
+      "index.html: dark-mode-init block",
+    );
+    await writeFile(indexHtmlPath, html);
   }
 
   // No Vitest — drop dep, scripts, vite.config test block, and CI step
@@ -206,18 +214,19 @@ export const Providers = ({ children }: PropsWithChildren) => {
 
     const viteConfigPath = join(target, "vite.config.ts");
     let viteCfg = await readFile(viteConfigPath, "utf8");
-    viteCfg = viteCfg
-      .replace("from 'vitest/config'", "from 'vite'")
-      .replace(
-        ",\n  test: { include: ['src/**/*.test.ts'], passWithNoTests: true }",
-        "",
-      );
+    viteCfg = mustReplace(viteCfg, "from 'vitest/config'", "from 'vite'", "vite.config: import source");
+    viteCfg = mustReplace(
+      viteCfg,
+      ",\n  test: { include: ['src/**/*.test.ts'], passWithNoTests: true }",
+      "",
+      "vite.config: test block",
+    );
     await writeFile(viteConfigPath, viteCfg);
 
     const ciPath = join(target, ".github/workflows/ci.yml");
     if (existsSync(ciPath)) {
       let ci = await readFile(ciPath, "utf8");
-      ci = ci.replace("      - run: bun run test:run\n", "");
+      ci = mustReplace(ci, "      - run: bun run test:run\n", "", "ci.yml: test:run step");
       await writeFile(ciPath, ci);
     }
   }
