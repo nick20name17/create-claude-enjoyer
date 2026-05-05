@@ -28,7 +28,15 @@
   },
   "files": [
     "index.js",
-    "template"
+    "template",
+    "!template/node_modules",
+    "!template/dist",
+    "!template/test-results",
+    "!template/playwright-report",
+    "!template/bun.lock",
+    "!template/.env",
+    "!template/.env.*",
+    "template/.env.example"
   ],
   "scripts": {
     "sync": "rsync -a --delete --exclude node_modules --exclude .git --exclude bun.lock --exclude dist --exclude dist-ssr --exclude .DS_Store ../claude-enjoyer/ ./template/ && mv ./template/.gitignore ./template/_gitignore 2>/dev/null || true",
