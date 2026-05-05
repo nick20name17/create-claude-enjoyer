@@ -24,7 +24,7 @@ jobs:
           key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
           restore-keys: ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile
-      - run: bun audit
+      - run: bun audit --audit-level=high
       - run: cp .env.example .env
       - run: bun run lint
       - run: bunx oxfmt --check

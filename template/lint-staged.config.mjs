@@ -1,4 +1,4 @@
 export default {
-  '*.{ts,tsx,js,jsx}': ['oxlint --fix', 'oxfmt', () => 'tsc -b --noEmit'],
-  '*.{json,css,md}': 'oxfmt'
+  '*.{ts,tsx,js,jsx}': ['oxlint --fix', 'oxfmt'],
+  '*.{json,css,md,yml,yaml}': 'oxfmt'
 }
