@@ -5,12 +5,12 @@ import { userService } from './service'
 export const USER_QUERY_KEYS = {
   all: () => ['users'] as const,
   details: () => [...USER_QUERY_KEYS.all(), 'detail'] as const,
-  detail: (id: string) => [...USER_QUERY_KEYS.details(), id] as const
+  detail: (id: number) => [...USER_QUERY_KEYS.details(), id] as const
 }
 
-export const getUserQuery = (id: string | null) =>
+export const getUserQuery = (id: number | null) =>
   queryOptions({
-    queryKey: USER_QUERY_KEYS.detail(id ?? ''),
+    queryKey: USER_QUERY_KEYS.detail(id ?? 0),
     queryFn: () => {
       if (id === null) throw new Error('id is required')
       return userService.getById(id)

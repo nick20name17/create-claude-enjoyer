@@ -58,7 +58,7 @@ api.interceptors.request.use(config => {
 
 const isAuthRequest = (config: InternalAxiosRequestConfig) => {
   const url = config.url ?? ''
-  return url.includes('/auth/') || url.includes('/token/')
+  return url.endsWith('/auth/login') || url.endsWith('/auth/refresh-token')
 }
 
 const forceLogout = () => {

@@ -108,7 +108,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
 
   const value: AuthContextValue = {
     user: user ?? null,
-    isAuthenticated: !!userId,
+    isAuthenticated: userId !== null,
     isUserLoading,
     signInMutation,
     signUpMutation,

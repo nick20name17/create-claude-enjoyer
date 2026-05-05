@@ -28,7 +28,7 @@ const SignInComponent = () => {
         <CardHeader>
           <CardTitle>Sign in</CardTitle>
           <CardDescription>
-            demo: <code>demo@demo.com</code> / <code>demo1234</code>
+            demo: <code>john@mail.com</code> / <code>changeme</code>
           </CardDescription>
         </CardHeader>
         <CardContent>

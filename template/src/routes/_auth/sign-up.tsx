@@ -27,7 +27,7 @@ const SignUpComponent = () => {
       <Card className='w-full max-w-sm'>
         <CardHeader>
           <CardTitle>Sign up</CardTitle>
-          <CardDescription>Create a demo account (mocked).</CardDescription>
+          <CardDescription>Create an account on the Platzi Fake Store API.</CardDescription>
         </CardHeader>
         <CardContent>
           <form
