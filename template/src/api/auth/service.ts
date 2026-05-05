@@ -1,23 +1,26 @@
+import * as z from 'zod/mini'
+
 import { api } from '@/api'
 import { UserSchema } from '@/api/user/schema'
-import {
-  TokensSchema,
-  type RefreshPayload,
-  type SignInPayload,
-  type SignInResponse,
-  type SignUpPayload,
-  type Tokens
+import type {
+  RefreshPayload,
+  SignInPayload,
+  SignInResponse,
+  SignUpPayload,
+  Tokens
 } from './schema'
 
-const mapTokens = (data: unknown): Tokens => {
-  const d = data as { access_token?: unknown; refresh_token?: unknown }
-  return TokensSchema.parse({ access: d.access_token, refresh: d.refresh_token })
+const TokensWireSchema = z.object({ access_token: z.string(), refresh_token: z.string() })
+
+const parseTokens = (data: unknown): Tokens => {
+  const wire = TokensWireSchema.parse(data)
+  return { access: wire.access_token, refresh: wire.refresh_token }
 }
 
 export const authService = {
   signIn: async (payload: SignInPayload): Promise<SignInResponse> => {
     const login = await api.post('/auth/login', payload)
-    const tokens = mapTokens(login.data)
+    const tokens = parseTokens(login.data)
     const profile = await api.get('/auth/profile', {
       headers: { Authorization: `Bearer ${tokens.access}` }
     })
@@ -34,6 +37,6 @@ export const authService = {
   },
   refresh: async (payload: RefreshPayload): Promise<Tokens> => {
     const { data } = await api.post('/auth/refresh-token', { refreshToken: payload.refresh })
-    return mapTokens(data)
+    return parseTokens(data)
   }
 }

@@ -83,9 +83,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     meta: { successMessage: 'Signed in' },
     onSuccess: async response => {
       applySession(response)
-
       queryClient.setQueryData(USER_QUERY_KEYS.detail(response.user.id), response.user)
-      await queryClient.invalidateQueries({ queryKey: USER_QUERY_KEYS.all() })
 
       const to =
         typeof redirect === 'string' && redirect.startsWith('/')
@@ -101,7 +99,6 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     mutationFn: authService.signUp,
     meta: { successMessage: 'Account created' },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: USER_QUERY_KEYS.all() })
       await navigate({ to: AUTH_REDIRECTS.logout, replace: true })
     }
   })
