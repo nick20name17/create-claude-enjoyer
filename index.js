@@ -13,11 +13,32 @@ import {
 import { cp, readFile, writeFile, rename, rm, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { dirname, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { spawn } from "node:child_process";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const TEMPLATE = join(here, "template");
+
+const COPY_SKIP = new Set([
+  "node_modules",
+  "dist",
+  "bun.lock",
+  ".env",
+  ".env.local",
+  ".env.development",
+  ".env.production",
+  ".env.test",
+  ".tanstack",
+  "test-results",
+  "playwright-report",
+  ".DS_Store",
+]);
+
+const copyFilter = (src) => {
+  const base = basename(src);
+  if (COPY_SKIP.has(base)) return false;
+  return !base.endsWith(".log");
+};
 
 const PMS = [
   { value: "bun", label: "bun" },
@@ -113,7 +134,7 @@ async function run() {
   const s = spinner();
   s.start("Copying template");
   if (shouldClean) await rm(target, { recursive: true, force: true });
-  await cp(TEMPLATE, target, { recursive: true });
+  await cp(TEMPLATE, target, { recursive: true, filter: copyFilter });
   // _gitignore -> .gitignore (npm doesn't publish .gitignore as-is)
   const ignoreSrc = join(target, "_gitignore");
   if (existsSync(ignoreSrc)) await rename(ignoreSrc, join(target, ".gitignore"));
